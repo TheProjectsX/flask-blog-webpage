@@ -1,23 +1,30 @@
-import bson.json_util
-from flask import Flask, request, Response
+from re import L
+from flask import Flask, request, Response, session
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 import json
 import os
 from bson.objectid import ObjectId
-from tomlkit import document
+import bcrypt
+import jwt
+import datetime
+
 
 load_dotenv()
 
 # App & Database Initialization
 app = Flask(__name__)
+app.secret_key = os.getenv("SESSION_SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGODB_URI")
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = True
 db = PyMongo(app).db
 
 
 # Test Route
 @app.route("/")
 def home():
+    print(session.get("access_token"))
     return {"success": True}
 
 
@@ -33,6 +40,157 @@ def jsonifyData(data):
 
 
 # TODO: Replace the collection names
+
+
+# Register a new User
+@app.route("/register", methods=["POST"])
+def registerNewUser():
+    body = request.json
+    if not body.get("username") or not body.get("email") or not body.get("password"):
+        return Response(
+            json.dumps({"success": False, "message": "Invalid body request"}),
+            status=400,
+            mimetype="application/json",
+        )
+
+    emailExists = db.test.find_one({"email": body.get("email")})
+
+    if emailExists:
+        return Response(
+            json.dumps({"success": False, "message": "Email already exists"}),
+            status=201,
+            mimetype="application/json",
+        )
+
+    if len(body.get("password")) < 6:
+        return Response(
+            json.dumps({"success": False, "message": "Min Password length is 6"}),
+            status=400,
+            mimetype="application/json",
+        )
+
+    hashedPassword = bcrypt.hashpw(
+        body.get("password").encode("utf-8"), bcrypt.gensalt(10)
+    )
+
+    userInfo = {
+        "username": body.get("username"),
+        "email": body.get("email"),
+        "profilePicture": body.get(
+            "profilePicture", "https://i.ibb.co.com/tQ1tBdV/dummy-profile-picture.jpg"
+        ),
+        "role": body.get("role", "user"),
+        "status": body.get("status", "active"),
+    }
+    doc = {**userInfo, "password": hashedPassword}
+
+    try:
+        dbResult = db.test.insert_one(doc)
+        if dbResult.acknowledged:
+            accessToken = jwt.encode(
+                {
+                    "email": body.get("email"),
+                    "exp": datetime.datetime.now() + datetime.timedelta(days=1),
+                },
+                os.getenv("JWT_SECRET"),
+            )
+            session["access_token"] = accessToken
+            return Response(
+                json.dumps(
+                    {
+                        "success": True,
+                        "message": "User created successfully!",
+                        **userInfo,
+                    }
+                ),
+                status=200,
+                mimetype="application/json",
+            )
+        else:
+            return Response(
+                json.dumps({"success": False, "message": "Failed to Create user"}),
+                status=500,
+                mimetype="application/json",
+            )
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {"success": False, "message": "Failed to Create user", "error": str(e)}
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
+# Login User
+@app.route("/login", methods=["POST"])
+def loginUser():
+    body = request.json
+    if not body.get("email") or not body.get("password"):
+        return Response(
+            json.dumps({"success": False, "message": "Invalid body request"}),
+            status=400,
+            mimetype="application/json",
+        )
+
+    try:
+        dbResult = db.test.find_one({"email": body.get("email")})
+        if (not dbResult) or (
+            not bcrypt.checkpw(
+                body.get("password").encode("utf-8"), dbResult.get("password", r"")
+            )
+        ):
+            return Response(
+                json.dumps({"success": False, "message": "Invalid Credentials"}),
+                status=401,
+                mimetype="application/json",
+            )
+
+        dbResult["_id"] = str(dbResult["_id"])
+        userInfo = {key: value for key, value in dbResult.items() if key != "password"}
+
+        accessToken = jwt.encode(
+            {
+                "email": userInfo.get("email"),
+                "exp": datetime.datetime.now() + datetime.timedelta(days=1),
+            },
+            os.getenv("JWT_SECRET"),
+        )
+
+        session["access_token"] = accessToken
+        return Response(
+            json.dumps(
+                {
+                    "success": True,
+                    "message": "Login Successful",
+                    **userInfo,
+                }
+            ),
+            status=200,
+            mimetype="application/json",
+        )
+
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {"success": False, "message": "Failed Login user", "error": str(e)}
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
+# Logout User
+@app.route("/logout")
+def logoutUser():
+    session.pop("access_token", None)
+    return Response(
+        json.dumps({"success": True, "message": "Logout Successful"}),
+        status=200,
+        mimetype="application/json",
+    )
+
+
 # CRUD
 # Create new Post
 @app.route("/posts", methods=["POST"])
