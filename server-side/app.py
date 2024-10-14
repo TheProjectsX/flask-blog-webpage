@@ -62,9 +62,6 @@ def jsonifyData(data):
     return result
 
 
-# TODO: Replace the collection names
-
-
 # Register a new User
 @app.route("/register", methods=["POST"])
 def registerNewUser():
@@ -282,6 +279,7 @@ def createPosts():
 # Read Posts from Server
 @app.route("/posts")
 def readPosts():
+    query = request.args.get("query", "")
     limit = request.args.get("limit", 15)
     page = request.args.get("page", 1)
 
@@ -298,7 +296,12 @@ def readPosts():
     skip = (page - 1) * limit
 
     try:
-        dbResult = db.posts.find({}).limit(limit).skip(skip)
+        dbResult = (
+            db.posts.find({"title": {"$regex": query, "$options": "i"}})
+            .limit(limit)
+            .skip(skip)
+            .sort({"createdAt": -1})
+        )
         return Response(
             json.dumps({"success": True, "data": jsonifyData(dbResult)}),
             status=200,
@@ -483,6 +486,85 @@ def deletePost(id):
         return Response(
             json.dumps(
                 {"success": False, "message": "Failed to Delete Post", "error": str(e)}
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
+#### User specific routes
+# Get info About user
+@app.route("/me")
+def getUserInfo():
+    sessionEmail = checkUserAuthentication()
+    if not sessionEmail:
+        return Response(
+            json.dumps({"success": False, "message": "Authentication Failed!"}),
+            status=401,
+            mimetype="application/json",
+        )
+
+    try:
+        dbResult = db.users.find_one({"email": sessionEmail})
+        if not dbResult:
+            return Response(
+                json.dumps({"success": False, "message": "Data not Found"}),
+                status=404,
+                mimetype="application/json",
+            )
+
+        dbResult["_id"] = str(dbResult["_id"])
+        userInfo = {key: value for key, value in dbResult.items() if key != "password"}
+        return Response(
+            json.dumps(
+                {"success": True, "message": "Successfully got user info", **userInfo}
+            ),
+            status=200,
+            mimetype="application/json",
+        )
+
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {
+                    "success": False,
+                    "message": "Failed to get user info",
+                    "error": str(e),
+                }
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
+# Get user posts
+@app.route("/me/posts")
+def getUserPosts():
+    sessionEmail = checkUserAuthentication()
+    if not sessionEmail:
+        return Response(
+            json.dumps({"success": False, "message": "Authentication Failed!"}),
+            status=401,
+            mimetype="application/json",
+        )
+
+    try:
+        dbResult = db.posts.find({"authorEmail": sessionEmail})
+
+        return Response(
+            json.dumps({"success": True, "data": jsonifyData(dbResult)}),
+            status=200,
+            mimetype="application/json",
+        )
+
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {
+                    "success": False,
+                    "message": "Failed to get user Posts",
+                    "error": str(e),
+                }
             ),
             status=500,
             mimetype="application/json",
