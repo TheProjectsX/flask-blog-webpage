@@ -1,53 +1,59 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import PostArray from "@/DataFiles/Posts.json";
+import AuthorData from "@/DataFiles/Authors.json";
 import PostPreview from "@/components/PostPreview";
 import WaitGif from "@/icons/wait.gif";
 
 const page = ({ params }) => {
-    const searchQuery = params.query;
+    const id = Number.parseInt(params.id);
 
-    const [categoryPosts, setCategoryPosts] = useState([]);
+    const [authorPosts, setAuthorPosts] = useState([]);
+    const [authorImage, setAuthorImage] = useState("");
     const [postCount, setPostCount] = useState(5);
     const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        setAuthorPosts(
+            PostArray.filter((item) => item.authorId === id).reverse()
+        );
+    }, [id]);
+
+    const importImageByName = async (name) => {
+        const imageModule = await import(`../authorImages/${name}`);
+        return imageModule.default;
+    };
 
     useEffect(() => {
-        setCategoryPosts(
-            PostArray.filter(
-                (item) =>
-                    item.title
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase()) ||
-                    item.body
-                        .toLowerCase()
-                        .includes(searchQuery.toLowerCase()) ||
-                    item.category.some((category) =>
-                        category
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
-                    )
-            ).reverse()
-        );
-    }, [searchQuery]);
+        const importImage = async () => {
+            const imagePath = await importImageByName(AuthorData[id].authorImg);
+            setAuthorImage(imagePath);
+        };
+
+        importImage();
+    }, [AuthorData[id].authorImg]);
 
     return (
         <div className="lg:w-2/3 pb-10">
-            <h2 className="text-2xl font-['Acme',sans-serif] mb-8">
-                Searched By: {searchQuery}
+            <img
+                src={authorImage}
+                alt="Author"
+                className="w-28 mb-2 ml-2 rounded-full"
+            />
+            <h2 className="text-2xl font-['Acme',sans-serif]">
+                Author: {AuthorData[id].authorName}
             </h2>
+            <h4 className="text-xl font-['Acme',sans-serif] mb-8">
+                Post: {AuthorData[id].authorPost}
+            </h4>
 
-            {categoryPosts.length === 0 ? (
-                <h2 className="text-2xl">No Post Found!</h2>
-            ) : (
-                categoryPosts.slice(0, postCount).map((post, index) => {
-                    return <PostPreview post={post} key={index} />;
-                })
-            )}
+            {authorPosts.slice(0, postCount).map((post, index) => {
+                return <PostPreview post={post} key={index} />;
+            })}
 
             <div className="flex justify-center lg:pt-8">
-                {postCount <= categoryPosts.length && (
+                {postCount <= authorPosts.length && (
                     <button
                         className="overflow-visible"
                         onClick={() => {
