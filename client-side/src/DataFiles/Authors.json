@@ -1,0 +1,14 @@
+{
+  "1": {
+    "authorId": 1,
+    "authorImg": "1.jpg",
+    "authorName": "Modasser Hasan",
+    "authorPost": "Admin"
+  },
+  "2": {
+    "authorId": 2,
+    "authorImg": "2.jpg",
+    "authorName": "Rahat Khan",
+    "authorPost": "Writer"
+  }
+}
