@@ -29,7 +29,7 @@ const page = () => {
                         <img
                             src={
                                 userData.userImg === ""
-                                    ? DefaultImage
+                                    ? DefaultImage.src
                                     : userData.userImg
                             }
                             alt="Hellow World"
@@ -49,7 +49,7 @@ const page = () => {
                                 Edit Profile
                             </Link>
                             <Link
-                                href="/account/dashboard/new"
+                                href="/account/dashboard/posts/new"
                                 className="text-primary hover:text-black dark:hover:text-white active:text-orange-500"
                             >
                                 Create New Post

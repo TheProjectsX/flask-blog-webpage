@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
-import ShowPassIcon from "../icons/showPass.png";
-import HidePassIcon from "../icons/hidePass.png";
-import Link from "next/link";
+import ShowPassIcon from "@/icons/showPass.png";
+import HidePassIcon from "@/icons/hidePass.png";
 import { useRouter } from "next/navigation";
 
 const page = () => {
@@ -123,7 +122,7 @@ const page = () => {
                         Password *
                     </p>
                     <img
-                        src={showPass ? ShowPassIcon : HidePassIcon}
+                        src={showPass ? ShowPassIcon.src : HidePassIcon.src}
                         alt="Show Hide Pass"
                         className="w-7 absolute right-2 top-2.5 bg-white rounded-full cursor-pointer"
                         onClick={() => {
