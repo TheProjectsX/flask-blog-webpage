@@ -1,52 +1,50 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
+import UserDataContext from "@/app/context/context";
 
 const page = () => {
-    const router = useRouter();
-    let loggedin = false;
-    loggedin = localStorage.getItem("loggedin");
+    const context = useContext(UserDataContext);
+    const { userData, setUserData } = context;
+    const [loading, setLoading] = useState(false);
 
-    if (loggedin === "false" || loggedin === null) {
-        router.push("/account/login");
+    if (!userData) {
+        return redirect("/account/login");
     }
 
-    const [userImg, setUserImg] = useState("");
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [userAbout, setUserAbout] = useState("");
+    const updateProfile = async (e) => {
+        setLoading(true);
+        e.preventDefault();
+        const form = e.target;
 
-    const [userOldData, setUserOldData] = useState({});
-    useEffect(() => {
-        setUserOldData(JSON.parse(localStorage.getItem("authData")));
-    }, []);
-
-    const updateProfile = () => {
-        toast.success("Profile Updated", {
-            position: "top-left",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-        });
-
-        const userData = {
-            userImg: userImg === "" ? userOldData.userImg : userImg,
-            username: username === "" ? userOldData.username : username,
-            email: email === "" ? userOldData.email : email,
-            password: password === "" ? userOldData.password : password,
-            userAbout: userAbout === "" ? userOldData.userAbout : userAbout,
-            post: "Writer",
+        const body = {
+            username: form.username.value,
+            profilePicture: form.profilePicture.value,
+            about: form.about.value,
         };
-        localStorage.setItem("authData", JSON.stringify(userData));
+
+        const serverResponse = await (
+            await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/me`, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(body),
+                credentials: "include",
+            })
+        ).json();
+
+        if (serverResponse.success) {
+            toast.success("Successfully Updated user info");
+            setUserData((prev) => ({ ...prev, ...serverResponse.updatedData }));
+        } else {
+            toast.error(serverResponse.message);
+        }
+        setLoading(false);
     };
 
     return (
@@ -54,10 +52,7 @@ const page = () => {
             <h1 className="text-2xl">Edit Your Profile</h1>
             <p className="mb-6">Leave Blank to Skip Update</p>
             <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    updateProfile();
-                }}
+                onSubmit={updateProfile}
                 className="gap-6 xl:gap-8 flex flex-col w-2/3 md:w-1/2 mb-6"
             >
                 <label className="relative">
@@ -72,10 +67,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={userImg}
-                        onChange={(e) => {
-                            setUserImg(e.target.value);
-                        }}
+                        name="profilePicture"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -102,10 +94,8 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={username}
-                        onChange={(e) => {
-                            setUsername(e.target.value);
-                        }}
+                        defaultValue={userData.username}
+                        name="username"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -123,36 +113,6 @@ const page = () => {
                 </label>
                 <label className="relative">
                     <input
-                        type="email"
-                        className="border-2 border-gray-500 rounded-md py-2 px-3 w-full dark:bg-gray-900 "
-                        onFocus={(e) =>
-                            e.target.nextElementSibling.classList.add(
-                                "transform",
-                                "-translate-y-[1.4rem]",
-                                "bg-white",
-                                "dark:bg-gray-900"
-                            )
-                        }
-                        value={email}
-                        onChange={(e) => {
-                            setEmail(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                            if (e.target.value !== "") return;
-                            e.target.nextElementSibling.classList.remove(
-                                "transform",
-                                "-translate-y-[1.4rem]",
-                                "bg-white",
-                                "dark:bg-gray-900"
-                            );
-                        }}
-                    />
-                    <p className="absolute top-2 left-3 group-focus:text-red-500 transition duration-200 px-1 cursor-text">
-                        Email
-                    </p>
-                </label>
-                <label className="relative">
-                    <input
                         type="text"
                         className="border-2 border-gray-500 rounded-md py-2 px-3 w-full dark:bg-gray-900 "
                         onFocus={(e) =>
@@ -163,41 +123,8 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={password}
-                        onChange={(e) => {
-                            setPassword(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                            if (e.target.value !== "") return;
-                            e.target.nextElementSibling.classList.remove(
-                                "transform",
-                                "-translate-y-[1.4rem]",
-                                "bg-white",
-                                "dark:bg-gray-900"
-                            );
-                        }}
-                        minLength={5}
-                    />
-                    <p className="absolute top-2 left-3 group-focus:text-red-500 transition duration-200 px-1 cursor-text">
-                        Password
-                    </p>
-                </label>
-                <label className="relative">
-                    <input
-                        type="text"
-                        className="border-2 border-gray-500 rounded-md py-2 px-3 w-full dark:bg-gray-900 "
-                        onFocus={(e) =>
-                            e.target.nextElementSibling.classList.add(
-                                "transform",
-                                "-translate-y-[1.4rem]",
-                                "bg-white",
-                                "dark:bg-gray-900"
-                            )
-                        }
-                        value={userAbout}
-                        onChange={(e) => {
-                            setUserAbout(e.target.value);
-                        }}
+                        defaultValue={userData.about}
+                        name="about"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -214,7 +141,12 @@ const page = () => {
                 </label>
                 <button
                     type="submit"
-                    className="w-full border-2 border-primary bg-primary text-white p-2 text-lg rounded-md font-bold hover:border-black hover:bg-black active:bg-white active:text-black"
+                    className={`w-full border-2 text-white p-2 text-lg rounded-md font-bold hover:border-black hover:bg-black active:bg-white active:text-black ${
+                        loading
+                            ? "cursor-wait bg-black border-black"
+                            : "bg-primary border-primary"
+                    }`}
+                    disabled={loading}
                 >
                     Update Profile
                 </button>

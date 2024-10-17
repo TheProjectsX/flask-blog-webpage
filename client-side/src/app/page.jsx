@@ -11,15 +11,13 @@ const page = async () => {
     ).json();
 
     return (
-        <>
-            <div className="overflow-hidden">
-                <Slider sliderPosts={postsData.data.slice(0, 4)} />
-                <div className="flex flex-col lg:flex-row lg:gap-10 xl:justify-between">
-                    <PostView postsDataPrimary={postsData} limit={8} />
-                    <Sidebar sideBarData={sideBarData.data} />
-                </div>
+        <div className="overflow-hidden">
+            <Slider sliderPosts={postsData.data.slice(0, 4)} />
+            <div className="flex flex-col lg:flex-row lg:gap-10 xl:justify-between">
+                <PostView postsDataPrimary={postsData} limit={8} />
+                <Sidebar sideBarData={sideBarData.data} />
             </div>
-        </>
+        </div>
     );
 };
 

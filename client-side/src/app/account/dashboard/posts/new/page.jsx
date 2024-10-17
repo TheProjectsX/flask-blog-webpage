@@ -1,84 +1,50 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import UserDataContext from "@/app/context/context";
+import { redirect, useRouter } from "next/navigation";
+import React, { useContext } from "react";
 import { toast } from "react-toastify";
 
 const page = () => {
     const router = useRouter();
-    const [titleImg, setTitleImg] = useState();
-    const [postTitle, setPostTitle] = useState();
-    const [postBody, setPostBody] = useState();
-    const [postCategory, setPostCategory] = useState();
+    const context = useContext(UserDataContext);
+    const { userData } = context;
 
-    const date = new Date();
-
-    // Get the full month name
-    const monthNames = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
-
-    const month = monthNames[date.getMonth()];
-    // Get the day
-    const day = date.getDate();
-    // Get the year
-    const year = date.getFullYear();
-
-    let loggedin = false;
-    loggedin = localStorage.getItem("loggedin");
-
-    if (loggedin === "false" || loggedin === null) {
-        router.push("/account/login");
+    if (!userData) {
+        return redirect("/account/login");
     }
 
-    let oldPosts = JSON.parse(localStorage.getItem("authorPosts"));
-    if (oldPosts === null) oldPosts = [];
+    const handleCreateNewPost = async (e) => {
+        e.preventDefault();
+        const form = e.target;
 
-    const savePost = () => {
-        toast.success("Posted Successfully!", {
-            position: "top-left",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-        });
-
-        const postData = {
-            id: oldPosts.length + 1,
-            authorID: 1,
-            titleImg,
-            title: postTitle,
-            body: postBody,
-            date: {
-                month,
-                day,
-                year,
-            },
-            category: postCategory
-                .split(" ")
-                .map((item) => item.charAt(0).toUpperCase() + item.slice(1)),
+        const body = {
+            title: form.title.value,
+            content: form.content.value,
+            imageUrl:
+                form.imageUrl.value === ""
+                    ? "https://i.ibb.co.com/ryNv8bc/image-placeholder.jpg"
+                    : form.imageUrl.value,
+            tags: form.tags.value.split(" "),
         };
 
-        oldPosts.push(postData);
+        const serverResponse = await (
+            await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/posts`, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(body),
+                credentials: "include",
+            })
+        ).json();
 
-        localStorage.setItem("authorPosts", JSON.stringify(oldPosts));
-        setTimeout(() => {
-            router.push("/account/dashboard");
-        }, 800);
+        if (serverResponse.success) {
+            toast.success("Created Post!");
+            router.push(`/posts/${serverResponse.id}`);
+        } else {
+            toast.error(serverResponse.message);
+        }
     };
 
     return (
@@ -88,10 +54,7 @@ const page = () => {
             </h1>
 
             <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    savePost();
-                }}
+                onSubmit={handleCreateNewPost}
                 className="gap-6 xl:gap-8 flex flex-col w-3/4"
             >
                 <label className="relative">
@@ -106,8 +69,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={titleImg}
-                        onChange={(e) => setTitleImg(e.target.value)}
+                        name="imageUrl"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -117,7 +79,6 @@ const page = () => {
                                 "dark:bg-gray-900"
                             );
                         }}
-                        required
                     />
                     <p className="absolute top-2 left-3 group-focus:text-red-500 transition duration-200 px-1">
                         Cover Image Link
@@ -135,8 +96,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={postTitle}
-                        onChange={(e) => setPostTitle(e.target.value)}
+                        name="title"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -165,8 +125,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={postBody}
-                        onChange={(e) => setPostBody(e.target.value)}
+                        name="content"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -179,7 +138,7 @@ const page = () => {
                         required
                     ></textarea>
                     <p className="absolute top-2 left-3 group-focus:text-red-500 transition duration-200 px-1">
-                        Body
+                        Content
                     </p>
                 </label>
                 <label className="relative">
@@ -194,8 +153,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={postCategory}
-                        onChange={(e) => setPostCategory(e.target.value)}
+                        name="tags"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -205,7 +163,6 @@ const page = () => {
                                 "dark:bg-gray-900"
                             );
                         }}
-                        required
                     />
                     <p className="absolute top-2 left-3 group-focus:text-red-500 transition duration-200 px-1">
                         Categories (Separate by Space)

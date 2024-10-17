@@ -7,8 +7,6 @@ const page = async ({ params }) => {
     const postData = await (
         await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/posts/${params.id}`)
     ).json();
-    console.log("🚀 ~ PostView ~ postData:", postData);
-
     return (
         <div className="lg:w-2/3 pb-10">
             <div className="border-b-2 border-gray-300 pb-4">

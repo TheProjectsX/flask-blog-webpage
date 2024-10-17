@@ -1,43 +1,49 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import DefaultImage from "@/authorImages/default.jpg";
-import { useRouter } from "next/navigation";
+import UserDataContext from "@/app/context/context";
+import { redirect } from "next/navigation";
 
 const page = () => {
-    const router = useRouter();
-    let loggedin = false;
-    loggedin = localStorage.getItem("loggedin");
+    const context = useContext(UserDataContext);
+    const { userData } = context;
 
-    if (loggedin === "false" || loggedin === null) {
-        router.push("/account/login");
+    if (!userData) {
+        return redirect("/account/login");
     }
 
-    const [userData, setUserData] = useState({});
+    const handleLogout = async () => {
+        const serverResponse = await (
+            await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/logout`, {
+                credentials: "include",
+            })
+        ).json();
 
-    useEffect(() => {
-        setUserData(JSON.parse(localStorage.getItem("authData")));
-    }, []);
+        if (serverResponse.success) {
+            toast.success("Logout Successful");
+        } else {
+            toast.error(serverResponse.message);
+        }
+    };
 
     return (
         <div className="lg:w-2/3">
-            {loggedin === "true" && (
+            {userData && (
                 <>
                     <div className="mb-10 ">
                         <img
-                            src={
-                                userData.userImg === ""
-                                    ? DefaultImage.src
-                                    : userData.userImg
-                            }
-                            alt="Hellow World"
+                            src={userData.profilePicture}
+                            alt={userData.username}
                             className="w-24 rounded-full mb-5 mx-4 border-2 border-black dark:border-0"
                         />
                         <h2 className="text-lg">Name: {userData.username}</h2>
-                        <h3 className="text-lg">Post: {userData.post}</h3>
-                        <h3 className="text-lg">About: {userData.userAbout}</h3>
+                        <h3 className="text-lg">Role: {userData.role}</h3>
+                        <h3 className="text-lg">
+                            Posts: {userData.postsCount}
+                        </h3>
+                        <h3 className="text-lg">About: {userData.about}</h3>
                     </div>
                     <div className="mb-4">
                         <h4 className="font-semibold text-lg">Quick Links:</h4>
@@ -64,20 +70,7 @@ const page = () => {
                     </div>
                     <button
                         className="border-2 border-primary bg-primary text-white py-2 px-4 text-lg rounded-md font-bold hover:border-black hover:bg-black active:bg-white active:text-black"
-                        onClick={() => {
-                            toast.success("Logout Successfull", {
-                                position: "top-left",
-                                autoClose: 2000,
-                                hideProgressBar: false,
-                                closeOnClick: true,
-                                pauseOnHover: true,
-                                draggable: true,
-                                progress: undefined,
-                                theme: "dark",
-                            });
-                            localStorage.setItem("loggedin", false);
-                            router.push("/account/login");
-                        }}
+                        onClick={handleLogout}
                     >
                         Logout
                     </button>

@@ -1,53 +1,51 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
 import ShowPassIcon from "@/icons/showPass.png";
 import HidePassIcon from "@/icons/hidePass.png";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
+import UserDataContext from "@/app/context/context";
 
 const page = () => {
-    const router = useRouter();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-
+    const context = useContext(UserDataContext);
+    const { userData, setUserData } = context;
     const [showPass, setShowPass] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = () => {
-        let AuthData = JSON.parse(localStorage.getItem("authData"));
+    if (userData) {
+        return redirect("/account/dashboard");
+    }
 
-        if (
-            AuthData === null ||
-            AuthData.email !== email ||
-            AuthData.password !== password
-        ) {
-            toast.error("Incorrect Credentials", {
-                position: "top-left",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-            });
+    const handleLogin = async (e) => {
+        setLoading(true);
+        e.preventDefault();
+        const form = e.target;
+        const body = {
+            email: form.email.value,
+            password: form.password.value,
+        };
+
+        const serverResponse = await (
+            await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/login`, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify(body),
+                credentials: "include",
+            })
+        ).json();
+
+        if (serverResponse.success) {
+            toast.success("Login Successful!");
+            setUserData(serverResponse);
         } else {
-            toast.success("Login Successfull!", {
-                position: "top-left",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "dark",
-            });
-
-            localStorage.setItem("loggedin", true);
-            router.push("/account/dashboard");
+            toast.error(serverResponse.message);
         }
+        setLoading(false);
     };
 
     return (
@@ -57,10 +55,7 @@ const page = () => {
             </h1>
 
             <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    handleLogin();
-                }}
+                onSubmit={handleLogin}
                 className="gap-6 xl:gap-8 flex flex-col w-2/3 md:w-1/2"
             >
                 <label className="relative">
@@ -75,8 +70,7 @@ const page = () => {
                                 "dark:bg-gray-900"
                             )
                         }
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        name="email"
                         onBlur={(e) => {
                             if (e.target.value !== "") return;
                             e.target.nextElementSibling.classList.remove(
@@ -96,8 +90,7 @@ const page = () => {
                     <input
                         type={showPass ? "text" : "password"}
                         className="border-2 border-gray-500 rounded-md py-2 px-3 w-full dark:bg-gray-900 pr-12"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        name="password"
                         onFocus={(e) =>
                             e.target.nextElementSibling.classList.add(
                                 "transform",
@@ -132,7 +125,12 @@ const page = () => {
                 </label>
                 <button
                     type="submit"
-                    className="w-full border-2 border-primary bg-primary text-white p-2 text-lg rounded-md font-bold hover:border-black hover:bg-black active:bg-white active:text-black"
+                    className={`w-full border-2 text-white p-2 text-lg rounded-md font-bold hover:border-black hover:bg-black active:bg-white active:text-black ${
+                        loading
+                            ? "cursor-wait bg-black border-black"
+                            : "bg-primary border-primary"
+                    }`}
+                    disabled={loading}
                 >
                     Login
                 </button>

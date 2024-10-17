@@ -4,11 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import SearchIcon from "../icons/search.svg";
-import FeedIcon from "../icons/feed.svg";
-import TwitterIcon from "../icons/twitter.svg";
-import FacebookIcon from "../icons/facebook.svg";
-import YoutubeIcon from "../icons/youtube.svg";
+import SearchIcon from "@/icons/search.svg";
+import FeedIcon from "@/icons/feed.svg";
+import TwitterIcon from "@/icons/twitter.svg";
+import FacebookIcon from "@/icons/facebook.svg";
+import YoutubeIcon from "@/icons/youtube.svg";
 
 const Navbar = () => {
     const [searchQuery, setSearchQuery] = useState("");
