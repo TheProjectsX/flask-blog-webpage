@@ -8,7 +8,7 @@ import bcrypt
 import jwt
 import datetime
 from datetime import datetime, timezone, timedelta
-
+from collections import Counter, defaultdict
 
 load_dotenv()
 
@@ -60,6 +60,33 @@ def jsonifyData(data):
         result.append(document)
 
     return result
+
+
+def countTagsAndGroupByDate(data):
+    tagCounts = defaultdict(int)
+
+    countByDate = defaultdict(int)
+
+    for doc in data:
+        created_at = doc["createdAt"]
+
+        date_obj = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        date_str = date_obj.strftime("%B %Y")
+
+        countByDate[date_str] += 1
+
+        tags = doc.get("tags", [])
+        for tag in tags:
+            tagCounts[tag] += 1
+
+    tagCountsList = [{"tag": tag, "count": count} for tag, count in tagCounts.items()]
+
+    dateCountsList = [
+        {"date": date, "count": count} for date, count in countByDate.items()
+    ]
+
+    return tagCountsList, dateCountsList
 
 
 # Register a new User
@@ -222,6 +249,45 @@ def logoutUser():
     )
 
 
+# Sidebar Info
+@app.route("/home/sidebar")
+def sideBarInfo():
+    try:
+        dbPostResult = jsonifyData(
+            db.posts.find({}, {"title": 1, "imageUrl": 1, "createdAt": 1})
+            .sort({"createdAt": -1})
+            .limit(6)
+        )
+        dbTagsTimeResult = db.posts.find({}, {"tags": 1, "createdAt": 1, "_id": 0})
+        tagCountsList, dateCountsList = countTagsAndGroupByDate(dbTagsTimeResult)
+
+        returnData = {
+            "success": True,
+            "data": {
+                "recentPosts": dbPostResult[:3],
+                "popularPosts": dbPostResult[3:],
+                "tags": tagCountsList,
+                "dates": dateCountsList,
+            },
+        }
+
+        return Response(
+            json.dumps(returnData),
+            status=200,
+            mimetype="application/json",
+        )
+
+    except Exception as e:
+        print(e)
+        return Response(
+            json.dumps(
+                {"success": False, "message": "Failed to get Data", "error": str(e)}
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
 # CRUD
 # Create new Post
 @app.route("/posts", methods=["POST"])
@@ -339,9 +405,16 @@ def readOnePost(id):
             )
 
         dbResult["_id"] = str(dbResult["_id"])
+        authorInfoDBResult = db.users.find_one({"email": dbResult["authorEmail"]})
+
+        authorInfo = {
+            "_id": str(authorInfoDBResult["_id"]),
+            "username": authorInfoDBResult["username"],
+            "profilePicture": authorInfoDBResult["profilePicture"],
+        }
 
         return Response(
-            json.dumps({"success": True, **dbResult}),
+            json.dumps({"success": True, **dbResult, "authorInfo": authorInfo}),
             status=200,
             mimetype="application/json",
         )
