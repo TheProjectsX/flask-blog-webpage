@@ -3,7 +3,7 @@ import TwitterIcon from "@/icons/twitter.svg";
 import MailIcon from "@/icons/mail.svg";
 import Link from "next/link";
 
-const PostView = async ({ params }) => {
+const page = async ({ params }) => {
     const postData = await (
         await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/posts/${params.id}`)
     ).json();
@@ -90,4 +90,4 @@ const PostView = async ({ params }) => {
     );
 };
 
-export default PostView;
+export default page;

@@ -3,14 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import PostArray from "../DataFiles/Posts.json";
 import FeedIcon from "@/icons/feed.svg";
 import TwitterIcon from "@/icons/twitter.svg";
 import FacebookIcon from "@/icons/facebook.svg";
 import YoutubeIcon from "@/icons/youtube.svg";
 
 const Sidebar = ({ sideBarData }) => {
-    console.log("🚀 ~ Sidebar ~ sideBarData:", sideBarData);
     const [recOpened, setRecOpened] = useState("recent");
 
     return (
@@ -38,39 +36,12 @@ const Sidebar = ({ sideBarData }) => {
                         Popular
                     </button>
                 </div>
-                {/* <div className="posts space-y-6">
-                    {getLastThreeItems(PostArray).map((item, index) => {
-                        return (
-                            <div key={index} className="flex gap-4">
-                                <Link
-                                    href={`/posts/${item.title}?id=${item.id}`}
-                                >
-                                    <img
-                                        src={item.titleImg}
-                                        alt={item.title}
-                                        className="w-28"
-                                    />
-                                </Link>
-                                <div>
-                                    <Link
-                                        href={`/posts/${item.title}?id=${item.id}`}
-                                    >
-                                        <h2 className="text-xl mb-3 text-primary hover:text-black dark:hover:text-white active:text-green-500 cursor-pointer">
-                                            {item.title}
-                                        </h2>
-                                    </Link>
-                                    <p className="text-sm text-gray-600">{`${item.date.month} ${item.date.day}, ${item.date.year}`}</p>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div> */}
                 {recOpened === "recent" && (
                     <div className="posts space-y-6">
                         {sideBarData.recentPosts?.map((item, index) => {
                             return (
                                 <div key={index} className="flex gap-4">
-                                    <Link href={`/posts/id=${item._id}`}>
+                                    <Link href={`/posts/${item._id}`}>
                                         <img
                                             src={item.imageUrl}
                                             alt={item.title}
@@ -78,7 +49,7 @@ const Sidebar = ({ sideBarData }) => {
                                         />
                                     </Link>
                                     <div>
-                                        <Link href={`/posts/id=${item._id}`}>
+                                        <Link href={`/posts/${item._id}`}>
                                             <h2 className="text-xl mb-3 text-primary hover:text-black dark:hover:text-white active:text-green-500 cursor-pointer">
                                                 {item.title}
                                             </h2>
@@ -165,7 +136,7 @@ const Sidebar = ({ sideBarData }) => {
                             <li key={index}>
                                 ○&nbsp;&nbsp;&nbsp;
                                 <Link
-                                    href={`/category/${tag.tag}`}
+                                    href={`/category/${tag.tag.toLowerCase()}`}
                                     className="text-primary hover:text-black dark:hover:text-white"
                                 >
                                     {tag.tag}
