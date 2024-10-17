@@ -1,6 +1,7 @@
 from flask import Flask, request, Response, session
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
+from flask_cors import CORS
 import json
 import os
 from bson.objectid import ObjectId
@@ -14,6 +15,16 @@ load_dotenv()
 
 # App & Database Initialization
 app = Flask(__name__)
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": [
+                "http://localhost:3000",
+            ]
+        }
+    },
+)
 app.secret_key = os.getenv("SESSION_SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGODB_URI")
 db = PyMongo(app).db
@@ -362,14 +373,28 @@ def readPosts():
     skip = (page - 1) * limit
 
     try:
-        dbResult = (
+        dbResult = jsonifyData(
             db.posts.find({"title": {"$regex": query, "$options": "i"}})
             .limit(limit)
             .skip(skip)
             .sort({"createdAt": -1})
         )
+        totalPostsCount = db.posts.estimated_document_count()
+        pagination = {
+            "currentCount": len(dbResult),
+            "totalPosts": totalPostsCount,
+            "has_next_page": page * limit < totalPostsCount,
+            "nextPage": page + 1,
+        }
+
         return Response(
-            json.dumps({"success": True, "data": jsonifyData(dbResult)}),
+            json.dumps(
+                {
+                    "success": True,
+                    "pagination": pagination,
+                    "data": dbResult,
+                }
+            ),
             status=200,
             mimetype="application/json",
         )
