@@ -30,12 +30,11 @@ app.secret_key = os.getenv("SESSION_SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGODB_URI")
 db = PyMongo(app).db
 # Only production
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
 app.config["SESSION_COOKIE_HTTPONLY"] = (
     True if os.getenv("MONGODB_URI") == "true" else False
 )
-app.config["SESSION_COOKIE_SECURE"] = (
-    True if os.getenv("MONGODB_URI") == "true" else False
-)
+app.config["SESSION_COOKIE_SECURE"] = True
 
 
 # Check user authentication of Request!
@@ -140,6 +139,7 @@ def registerNewUser():
         ),
         "role": body.get("role", "user"),
         "status": body.get("status", "active"),
+        "about": body.get("about", ""),
         "createdAt": datetime.now(timezone.utc).isoformat(),
     }
     doc = {**userInfo, "password": hashedPassword}
@@ -630,6 +630,66 @@ def getUserInfo():
                 {
                     "success": False,
                     "message": "Failed to get user info",
+                    "error": str(e),
+                }
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
+# Update user Profile
+@app.route("/me", methods=["POST"])
+def updateUserProfile():
+    sessionEmail = checkUserAuthentication()
+    if not sessionEmail:
+        return Response(
+            json.dumps({"success": False, "message": "Authentication Failed!"}),
+            status=401,
+            mimetype="application/json",
+        )
+
+    body = request.json
+
+    doc = {}
+    for key in body.keys():
+        if key.lower() in ["profilePicture", "username", "about"]:
+            doc[key] = body[key]
+
+    if len(doc.keys()) == 0:
+        return Response(
+            json.dumps({"success": False, "message": "Invalid body request"}),
+            status=400,
+            mimetype="application/json",
+        )
+
+    try:
+        dbResult = db.users.update_one({"email": sessionEmail}, {"$set": doc})
+
+        if dbResult.modified_count > 0:
+            return Response(
+                json.dumps(
+                    {
+                        "success": True,
+                        "message": "User updated successfully",
+                        "updatedData": doc,
+                    }
+                ),
+                status=200,
+                mimetype="application/json",
+            )
+        else:
+            return Response(
+                json.dumps({"success": False, "message": "Nothing Updated"}),
+                status=400,
+                mimetype="application/json",
+            )
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {
+                    "success": False,
+                    "message": "Failed to Update User account",
                     "error": str(e),
                 }
             ),
