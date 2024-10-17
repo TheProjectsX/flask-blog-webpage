@@ -4,61 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 
 import PostArray from "../DataFiles/Posts.json";
-import FeedIcon from "../icons/feed.svg";
-import TwitterIcon from "../icons/twitter.svg";
-import FacebookIcon from "../icons/facebook.svg";
-import YoutubeIcon from "../icons/youtube.svg";
+import FeedIcon from "@/icons/feed.svg";
+import TwitterIcon from "@/icons/twitter.svg";
+import FacebookIcon from "@/icons/facebook.svg";
+import YoutubeIcon from "@/icons/youtube.svg";
 
-const Sidebar = () => {
-    const getLastThreeItems = (array) => {
-        if (array.length <= 3) {
-            return array.slice().reverse();
-        } else {
-            return array.slice(-3).reverse();
-        }
-    };
-
-    const createMonthCount = (data) => {
-        const monthCount = {};
-
-        data.forEach((item) => {
-            const { month, year } = item.date;
-            const key = `${month} ${year}`;
-            if (monthCount.hasOwnProperty(key)) {
-                monthCount[key]++;
-            } else {
-                monthCount[key] = 1;
-            }
-        });
-
-        return monthCount;
-    };
-
-    const createCategoryCount = (arr) => {
-        const categoryCounts = {};
-
-        arr.forEach((item) => {
-            const { category } = item;
-            category.forEach((cat) => {
-                if (categoryCounts.hasOwnProperty(cat)) {
-                    categoryCounts[cat]++;
-                } else {
-                    categoryCounts[cat] = 1;
-                }
-            });
-        });
-
-        return categoryCounts;
-    };
-
+const Sidebar = ({ sideBarData }) => {
+    console.log("🚀 ~ Sidebar ~ sideBarData:", sideBarData);
     const [recOpened, setRecOpened] = useState("recent");
 
     return (
         <div className="lg:1/3 xl:w-1/4 py-10 lg:pt-0 space-y-10">
-            {/* Recomended */}
-            <div className="recomended">
+            {/* Recommended */}
+            <div className="recommended">
                 <h2 className="text-3xl font-['Acme',sans-serif]">
-                    Recomended
+                    Recommended
                 </h2>
                 <div className="buttons pt-5 pb-8 space-x-3">
                     <button
@@ -78,7 +38,7 @@ const Sidebar = () => {
                         Popular
                     </button>
                 </div>
-                <div className="posts space-y-6">
+                {/* <div className="posts space-y-6">
                     {getLastThreeItems(PostArray).map((item, index) => {
                         return (
                             <div key={index} className="flex gap-4">
@@ -104,7 +64,69 @@ const Sidebar = () => {
                             </div>
                         );
                     })}
-                </div>
+                </div> */}
+                {recOpened === "recent" && (
+                    <div className="posts space-y-6">
+                        {sideBarData.recentPosts?.map((item, index) => {
+                            return (
+                                <div key={index} className="flex gap-4">
+                                    <Link href={`/posts/id=${item._id}`}>
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.title}
+                                            className="w-28"
+                                        />
+                                    </Link>
+                                    <div>
+                                        <Link href={`/posts/id=${item._id}`}>
+                                            <h2 className="text-xl mb-3 text-primary hover:text-black dark:hover:text-white active:text-green-500 cursor-pointer">
+                                                {item.title}
+                                            </h2>
+                                        </Link>
+                                        <p className="text-sm text-gray-600">{`${new Date(
+                                            item.createdAt
+                                        ).toLocaleString("en-US", {
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}`}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+                {recOpened === "popular" && (
+                    <div className="posts space-y-6">
+                        {sideBarData.popularPosts?.map((item, index) => {
+                            return (
+                                <div key={index} className="flex gap-4">
+                                    <Link href={`/posts/id=${item._id}`}>
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.title}
+                                            className="w-28"
+                                        />
+                                    </Link>
+                                    <div>
+                                        <Link href={`/posts/id=${item._id}`}>
+                                            <h2 className="text-xl mb-3 text-primary hover:text-black dark:hover:text-white active:text-green-500 cursor-pointer">
+                                                {item.title}
+                                            </h2>
+                                        </Link>
+                                        <p className="text-sm text-gray-600">{`${new Date(
+                                            item.createdAt
+                                        ).toLocaleString("en-US", {
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}`}</p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Archives */}
@@ -113,24 +135,22 @@ const Sidebar = () => {
                     Archives
                 </h2>
                 <ul className="archiveData text-lg">
-                    {Object.entries(createMonthCount(PostArray)).map(
-                        ([key, value], index) => {
-                            return (
-                                <li key={index}>
-                                    ○&nbsp;&nbsp;&nbsp;
-                                    <Link
-                                        href={`/archive/${key
-                                            .toLowerCase()
-                                            .replaceAll(" ", "+")}`}
-                                        className="text-primary hover:text-black dark:hover:text-white"
-                                    >
-                                        {key}
-                                    </Link>{" "}
-                                    ({value}){" "}
-                                </li>
-                            );
-                        }
-                    )}
+                    {sideBarData.dates.map((item, index) => {
+                        return (
+                            <li key={index}>
+                                ○&nbsp;&nbsp;&nbsp;
+                                <Link
+                                    href={`/archive/${item.date
+                                        .toLowerCase()
+                                        .replaceAll(" ", "+")}`}
+                                    className="text-primary hover:text-black dark:hover:text-white"
+                                >
+                                    {item.date}
+                                </Link>{" "}
+                                ({item.count}){" "}
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 
@@ -140,22 +160,20 @@ const Sidebar = () => {
                     Categories
                 </h2>
                 <ul className="archiveData text-lg">
-                    {Object.entries(createCategoryCount(PostArray)).map(
-                        ([key, value], index) => {
-                            return (
-                                <li key={index}>
-                                    ○&nbsp;&nbsp;&nbsp;
-                                    <Link
-                                        href={`/category/${key}`}
-                                        className="text-primary hover:text-black dark:hover:text-white"
-                                    >
-                                        {key}
-                                    </Link>{" "}
-                                    ({value})
-                                </li>
-                            );
-                        }
-                    )}
+                    {sideBarData.tags.map((tag, index) => {
+                        return (
+                            <li key={index}>
+                                ○&nbsp;&nbsp;&nbsp;
+                                <Link
+                                    href={`/category/${tag.tag}`}
+                                    className="text-primary hover:text-black dark:hover:text-white"
+                                >
+                                    {tag.tag}
+                                </Link>{" "}
+                                ({tag.count})
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 

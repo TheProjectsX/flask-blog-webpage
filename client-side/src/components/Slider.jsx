@@ -1,16 +1,17 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import PostArray from "../DataFiles/Posts.json";
+import { useRef, useState } from "react";
+// import sliderPosts from "../DataFiles/Posts.json";
 import Link from "next/link";
 
-const Slider = (props) => {
+const Slider = ({ sliderPosts }) => {
     const sliderDiv = useRef(null);
     const [scrollPercentage, setScrollPercentage] = useState(100);
 
-    const { count } = props;
     const posts =
-        PostArray.length <= count ? PostArray : PostArray.slice(-count);
+        sliderPosts.length <= sliderPosts.length
+            ? sliderPosts
+            : sliderPosts.slice(-sliderPosts.length);
     const sliderWidth = posts.length * 100;
 
     const scrollToPercentageX = (percentage) => {
@@ -47,10 +48,14 @@ const Slider = (props) => {
                     }}
                 >
                     {posts.map((item, index) => {
-                        const postUrl = `/posts/${item.title}?id=${item.id}`;
-                        const monthUrl = `/archive/${item.date.month.toLowerCase()}+${
-                            item.date.year
-                        }`;
+                        const postUrl = `/posts/${item._id}`;
+                        const monthUrl = `/archive/${new Date(item.createdAt)
+                            .toLocaleString("en-US", { month: "long" })
+                            .toLowerCase()}+${new Date(
+                            item.createdAt
+                        ).toLocaleString("en-US", {
+                            year: "numeric",
+                        })}`;
                         return (
                             <div
                                 className="flex flex-col lg:flex-row-reverse w-[100%]"
@@ -58,9 +63,9 @@ const Slider = (props) => {
                             >
                                 <Link href={postUrl} className="">
                                     <img
-                                        src={item.titleImg}
+                                        src={item.imageUrl}
                                         alt={item.title}
-                                        className=""
+                                        className="w-full"
                                     />
                                 </Link>
                                 <div className="p-10 lg:w-[55%]">
@@ -68,29 +73,31 @@ const Slider = (props) => {
                                         <Link
                                             href={monthUrl}
                                             className="cursor-pointer hover:text-gray-600"
-                                        >{`${item.date.month} ${item.date.day}, ${item.date.year}`}</Link>
+                                        >{`${new Date(
+                                            item.createdAt
+                                        ).toLocaleString("en-US", {
+                                            month: "long",
+                                            day: "numeric",
+                                            year: "numeric",
+                                        })}`}</Link>
                                         &nbsp;&nbsp;●&nbsp;&nbsp;
                                         <span>
-                                            {item.category.map(
-                                                (catItem, index) => {
-                                                    return (
-                                                        <span key={index}>
-                                                            <Link
-                                                                href={`/category/${catItem.toLowerCase()}`}
-                                                                className="cursor-pointer hover:text-gray-500"
-                                                            >
-                                                                {catItem}
-                                                            </Link>
-                                                            {index !==
-                                                            item.category
-                                                                .length -
-                                                                1
-                                                                ? " / "
-                                                                : ""}
-                                                        </span>
-                                                    );
-                                                }
-                                            )}
+                                            {item.tags.map((catItem, index) => {
+                                                return (
+                                                    <span key={index}>
+                                                        <Link
+                                                            href={`/category/${catItem.toLowerCase()}`}
+                                                            className="cursor-pointer hover:text-gray-500"
+                                                        >
+                                                            {catItem}
+                                                        </Link>
+                                                        {index !==
+                                                        item.tags.length - 1
+                                                            ? " / "
+                                                            : ""}
+                                                    </span>
+                                                );
+                                            })}
                                         </span>
                                     </p>
 
@@ -100,7 +107,7 @@ const Slider = (props) => {
                                         </h2>
                                     </Link>
                                     <p className="pb-8 text-lg lg:text-xl">
-                                        {item.body.substr(0, 138)}...
+                                        {item.content.slice(0, 138)}...
                                     </p>
                                     <Link
                                         href={postUrl}

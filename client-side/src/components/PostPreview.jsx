@@ -1,15 +1,20 @@
 import Link from "next/link";
 
 const PostPreview = (props) => {
-    const { titleImg, title, body, id, date, category } = props.post;
-    const postUrl = `/posts/${title}?id=${id}`;
-    const monthUrl = `/archive/${date.month.toLowerCase()}+${date.year}`;
+    const { imageUrl, title, content, _id, createdAt, tags } = props.post;
+    const postUrl = `/posts/${_id}`;
+    const monthUrl = `/archive/${new Date(createdAt)
+        .toLocaleString("en-US", { month: "long" })
+        .toLowerCase()}+${new Date(createdAt).toLocaleString("en-US", {
+        year: "numeric",
+    })}`;
+    // const monthUrl = "";
 
     return (
         <div className="flex flex-col mb-16 sm:flex-row gap-4 sm:gap-8">
             <div className="space-y-3">
                 <Link href={postUrl}>
-                    <img src={titleImg} alt={title} />
+                    <img src={imageUrl} alt={title} />
                 </Link>
                 <Link
                     href={postUrl}
@@ -25,10 +30,16 @@ const PostPreview = (props) => {
                     <Link
                         href={monthUrl}
                         className="cursor-pointer hover:text-gray-600"
-                    >{`${date.month} ${date.day}, ${date.year}`}</Link>
+                    >
+                        {`${new Date(createdAt).toLocaleString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                        })}`}
+                    </Link>
                     &nbsp;&nbsp;●&nbsp;&nbsp;
                     <span>
-                        {category.map((item, index) => {
+                        {tags.map((item, index) => {
                             return (
                                 <span key={index}>
                                     <Link
@@ -37,7 +48,7 @@ const PostPreview = (props) => {
                                     >
                                         {item}
                                     </Link>
-                                    {index !== category.length - 1 ? " / " : ""}
+                                    {index !== tags.length - 1 ? " / " : ""}
                                 </span>
                             );
                         })}
@@ -49,7 +60,7 @@ const PostPreview = (props) => {
                         {title}
                     </h2>
                 </Link>
-                <p className="pb-8 text-lg">{body.substr(0, 138)}...</p>
+                <p className="pb-8 text-lg">{content.substr(0, 138)}...</p>
                 <Link
                     href={postUrl}
                     className="sm:hidden md:block lg:hidden 2lg:block"
