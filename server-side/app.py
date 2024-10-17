@@ -9,7 +9,7 @@ import bcrypt
 import jwt
 import datetime
 from datetime import datetime, timezone, timedelta
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 load_dotenv()
 
@@ -24,6 +24,7 @@ CORS(
             ]
         }
     },
+    supports_credentials=True,
 )
 app.secret_key = os.getenv("SESSION_SECRET_KEY")
 app.config["MONGO_URI"] = os.getenv("MONGODB_URI")
@@ -610,9 +611,11 @@ def getUserInfo():
                 status=404,
                 mimetype="application/json",
             )
+        postsCount = db.posts.count_documents({"authorEmail": dbResult["email"]})
 
         dbResult["_id"] = str(dbResult["_id"])
         userInfo = {key: value for key, value in dbResult.items() if key != "password"}
+        userInfo["postsCount"] = postsCount
         return Response(
             json.dumps(
                 {"success": True, "message": "Successfully got user info", **userInfo}
