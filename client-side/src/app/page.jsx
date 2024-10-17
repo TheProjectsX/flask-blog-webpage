@@ -1,4 +1,6 @@
-import Home from "./Home";
+import Slider from "@/components/Slider";
+import PostView from "@/components/PostsView";
+import Sidebar from "@/components/Sidebar";
 
 const page = async () => {
     const postsData = await (
@@ -8,7 +10,17 @@ const page = async () => {
         await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/home/sidebar`)
     ).json();
 
-    return <Home postsData={postsData.data} sideBarData={sideBarData.data} />;
+    return (
+        <>
+            <div className="overflow-hidden">
+                <Slider sliderPosts={postsData.data.slice(0, 4)} />
+                <div className="flex flex-col lg:flex-row lg:gap-10 xl:justify-between">
+                    <PostView postsDataPrimary={postsData} limit={8} />
+                    <Sidebar sideBarData={sideBarData.data} />
+                </div>
+            </div>
+        </>
+    );
 };
 
 export default page;

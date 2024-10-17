@@ -1,4 +1,4 @@
-import PostView from "./PostsView";
+import PostView from "@/components/PostsView";
 
 const page = async () => {
     const limit = 8;

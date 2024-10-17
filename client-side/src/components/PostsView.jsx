@@ -4,7 +4,7 @@ import PostPreview from "@/components/PostPreview";
 import WaitGif from "@/icons/wait.gif";
 import { useState } from "react";
 
-const PostView = ({ postsDataPrimary, limit }) => {
+const PostView = ({ postsDataPrimary, limit = 8 }) => {
     const [postsData, setPostsData] = useState(postsDataPrimary);
     const [isLoading, setIsLoading] = useState(false);
 
