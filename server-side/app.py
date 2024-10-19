@@ -409,6 +409,74 @@ def readPosts():
         )
 
 
+# Read Archived Posts from Server
+@app.route("/posts/archive/<string:month_year>")
+def readArchivePosts(month_year):
+    limit = request.args.get("limit", 15)
+    page = request.args.get("page", 1)
+
+    try:
+        isoDate = datetime.strptime(month_year, "%B %Y").strftime("%Y-%m")
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {
+                    "success": False,
+                    "message": "Invalid Date format (Use: `month year` format)",
+                    "error": str(e),
+                }
+            ),
+            status=400,
+            mimetype="application/json",
+        )
+
+    filterQuery = {"createdAt": {"$regex": f"^{isoDate}"}}
+
+    try:
+        limit = int(limit)
+    except Exception as e:
+        limit = 15
+
+    try:
+        page = int(page)
+    except Exception as e:
+        page = 1
+
+    skip = (page - 1) * limit
+
+    try:
+        dbResult = jsonifyData(
+            db.posts.find(filterQuery).limit(limit).skip(skip).sort({"createdAt": -1})
+        )
+        totalPostsCount = db.posts.count_documents(filterQuery)
+        pagination = {
+            "currentCount": len(dbResult),
+            "totalPosts": totalPostsCount,
+            "has_next_page": page * limit < totalPostsCount,
+            "nextPage": page + 1,
+        }
+
+        return Response(
+            json.dumps(
+                {
+                    "success": True,
+                    "pagination": pagination,
+                    "data": dbResult,
+                }
+            ),
+            status=200,
+            mimetype="application/json",
+        )
+    except Exception as e:
+        return Response(
+            json.dumps(
+                {"success": False, "message": "Failed to get Posts", "error": str(e)}
+            ),
+            status=500,
+            mimetype="application/json",
+        )
+
+
 # Read One Post
 @app.route("/posts/<string:id>")
 def readOnePost(id):
