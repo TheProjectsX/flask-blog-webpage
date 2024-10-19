@@ -20,7 +20,7 @@ CORS(
     resources={
         r"/*": {
             "origins": [
-                "http://localhost:3000",
+                "http://localhost:3000", "https://techhub-x.vercel.app",
             ]
         }
     },
