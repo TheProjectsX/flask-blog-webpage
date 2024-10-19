@@ -34,7 +34,7 @@ const page = () => {
                 <h2 className="text-2xl text-center">No Posts To View</h2>
             ) : (
                 authorPosts.map((post, index) => (
-                    <PostPreview post={post} key={index} />
+                    <PostPreview post={post} key={index} dashboard />
                 ))
             )}
         </div>

@@ -4,7 +4,7 @@ import PostPreview from "@/components/PostPreview";
 import WaitGif from "@/icons/wait.gif";
 import { useState } from "react";
 
-const PostView = ({ postsDataPrimary, limit = 8 }) => {
+const PostView = ({ postsDataPrimary, title, customUrl, limit = 8 }) => {
     const [postsData, setPostsData] = useState(postsDataPrimary);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -12,7 +12,9 @@ const PostView = ({ postsDataPrimary, limit = 8 }) => {
         setIsLoading(true);
         const serverResponse = await (
             await fetch(
-                `${process.env.NEXT_PUBLIC_SERVER_URL}/posts?page=${postsData.pagination.nextPage}&limit=${limit}`
+                `${
+                    customUrl ?? `${process.env.NEXT_PUBLIC_SERVER_URL}/posts`
+                }?page=${postsData.pagination.nextPage}&limit=${limit}`
             )
         ).json();
 
@@ -27,6 +29,8 @@ const PostView = ({ postsDataPrimary, limit = 8 }) => {
 
     return (
         <div className="lg:w-2/3 pb-10">
+            {title && <h2 className="text-2xl mb-8">{title}</h2>}
+
             {postsData.data.map((post, index) => (
                 <PostPreview post={post} key={index} />
             ))}
