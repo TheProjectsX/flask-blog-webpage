@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 
 const page = () => {
     const context = useContext(UserDataContext);
-    const { userData } = context;
+    const { userData, setUserData } = context;
 
     if (!userData) {
         return redirect("/account/login");
@@ -23,6 +23,7 @@ const page = () => {
 
         if (serverResponse.success) {
             toast.success("Logout Successful");
+            setUserData(null);
         } else {
             toast.error(serverResponse.message);
         }

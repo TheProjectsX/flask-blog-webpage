@@ -12,7 +12,17 @@ export default async function RootLayout({ children }) {
 
     return (
         <html lang="en" className="dark">
-            <body className={``}>
+            <head>
+                <title>Tech Hub</title>
+                <link rel="icon" href="/favicon.ico" />
+                <link rel="apple-touch-icon" href="/logo192.png" />
+                <link rel="manifest" href="/manifest.json" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap"
+                    rel="stylesheet"
+                />
+            </head>
+            <body className="font-['Ubuntu', sans-serif]">
                 <ToastContainer
                     position="top-left"
                     autoClose={3000}

@@ -162,6 +162,7 @@ def registerNewUser():
                         "success": True,
                         "message": "User created successfully!",
                         **userInfo,
+                        "postsCount": 0,
                     }
                 ),
                 status=200,
@@ -207,9 +208,12 @@ def loginUser():
                 mimetype="application/json",
             )
 
+        postsCount = db.posts.count_documents({"authorEmail": dbResult["email"]})
         dbResult["_id"] = str(dbResult["_id"])
+
         userInfo = {key: value for key, value in dbResult.items() if key != "password"}
 
+        userInfo["postsCount"] = postsCount
         accessToken = jwt.encode(
             {
                 "email": userInfo.get("email"),
@@ -326,7 +330,7 @@ def createPosts():
         "imageUrl": body.get(
             "imageUrl", "https://i.ibb.co.com/ryNv8bc/image-placeholder.jpg"
         ),
-        "tags": body.get("tags", []),
+        "tags": [tag for tag in body.get("tags", []) if tag != ""],
         "authorEmail": sessionEmail,
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "updatedAt": datetime.now(timezone.utc).isoformat(),
