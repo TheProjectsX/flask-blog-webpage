@@ -30,10 +30,15 @@ const PostView = ({ postsDataPrimary, title, customUrl, limit = 8 }) => {
     return (
         <div className="lg:w-2/3 pb-10">
             {title && <h2 className="text-2xl mb-8">{title}</h2>}
-
-            {postsData.data.map((post, index) => (
-                <PostPreview post={post} key={index} />
-            ))}
+            {postsData.data.length === 0 && (
+                <div className="italic text-xl font-semibold text-center">
+                    No Posts to Show
+                </div>
+            )}
+            {postsData.data.length > 0 &&
+                postsData.data.map((post, index) => (
+                    <PostPreview post={post} key={index} />
+                ))}
             <div className="flex justify-center lg:pt-8">
                 {postsData.pagination.has_next_page && (
                     <button className="overflow-visible" onClick={loadMoreData}>

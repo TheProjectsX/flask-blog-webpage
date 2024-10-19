@@ -365,6 +365,8 @@ def readPosts():
     limit = request.args.get("limit", 15)
     page = request.args.get("page", 1)
 
+    filterQuery = {"title": {"$regex": query, "$options": "i"}}
+
     try:
         limit = int(limit)
     except Exception as e:
@@ -379,12 +381,9 @@ def readPosts():
 
     try:
         dbResult = jsonifyData(
-            db.posts.find({"title": {"$regex": query, "$options": "i"}})
-            .limit(limit)
-            .skip(skip)
-            .sort({"createdAt": -1})
+            db.posts.find(filterQuery).limit(limit).skip(skip).sort({"createdAt": -1})
         )
-        totalPostsCount = db.posts.estimated_document_count()
+        totalPostsCount = db.posts.count_documents(filterQuery)
         pagination = {
             "currentCount": len(dbResult),
             "totalPosts": totalPostsCount,

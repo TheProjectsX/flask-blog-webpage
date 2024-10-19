@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 
-import PostArray from "@/DataFiles/Posts.json";
 import AuthorData from "@/DataFiles/Authors.json";
 import PostPreview from "@/components/PostPreview";
 import WaitGif from "@/icons/wait.gif";
