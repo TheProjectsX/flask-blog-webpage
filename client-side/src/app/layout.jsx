@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import ChildrenWrapper from "./ChildrenWrapper";
 import { Bounce, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NextTopLoader from "nextjs-toploader";
 
 export default async function RootLayout({ children }) {
     const sideBarData = await (
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }) {
                 />
             </head>
             <body className="font-['Ubuntu', sans-serif]">
+                <NextTopLoader showSpinner={false} />
                 <ToastContainer
                     position="top-left"
                     autoClose={3000}

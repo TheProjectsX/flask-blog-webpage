@@ -40,8 +40,11 @@ const PostPreview = ({ post: postData, dashboard = false }) => {
             }`}
         >
             <div className="space-y-3">
-                <Link href={postUrl}>
-                    <img src={imageUrl} alt={title} />
+                <Link
+                    href={postUrl}
+                    className="sm:w-[340px] sm:h-[225px] inline-block"
+                >
+                    <img src={imageUrl} alt={title} className="w-full h-full" />
                 </Link>
                 <div className="hidden sm:flex md:hidden lg:flex 2lg:hidden flex-wrap gap-1">
                     <Link href={postUrl}>

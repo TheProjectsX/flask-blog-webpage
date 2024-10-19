@@ -16,16 +16,30 @@ const page = async ({ params }) => {
                     className="pb-4 w-full max-h-[490px]"
                 />
                 <p className="pb-2 text-sm text-gray-400">
-                    <span className="cursor-pointer hover:text-gray-600">{`${new Date(
-                        postData.createdAt
-                    ).toLocaleString("en-US", {
+                    <Link
+                        href={`/archive/${new Date(
+                            postData.createdAt
+                        ).toLocaleString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                        })}`}
+                        className="cursor-pointer hover:text-gray-300"
+                    >{`${new Date(postData.createdAt).toLocaleString("en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
-                    })}`}</span>
+                    })}`}</Link>
                     &nbsp;&nbsp;●&nbsp;&nbsp;
-                    <span className="cursor-pointer hover:text-gray-600">
-                        {postData.tags.join(" / ")}
+                    <span className="inline-flex gap-2">
+                        {postData.tags.map((tag, idx) => (
+                            <Link
+                                key={idx}
+                                href={`/category/${tag}`}
+                                className="cursor-pointer hover:text-gray-300"
+                            >
+                                {tag}
+                            </Link>
+                        ))}
                     </span>
                 </p>
                 <h2 className="text-[1.75rem] font-bold font-['Ubuntu',sans-serif] pb-3">
@@ -39,12 +53,9 @@ const page = async ({ params }) => {
                     />
                     <p className="text-lg">
                         Posted By{" "}
-                        <Link
-                            href={`/author/${postData.authorInfo._id}`}
-                            className="px-1 text-primary hover:text-black active:text-orange-400 dark:hover:text-white"
-                        >
+                        <span className="px-1 text-primary hover:text-black active:text-orange-400 dark:hover:text-white">
                             {postData.authorInfo.username}
-                        </Link>
+                        </span>
                     </p>
                 </div>
                 <p className="text-lg md:text-xl whitespace-pre-line">

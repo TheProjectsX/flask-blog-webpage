@@ -56,34 +56,46 @@ const Navbar = () => {
                         </button>
                     </form>
                     <div className="flex gap-1">
-                        <button className="bg-primary p-3 hover:bg-black rounded-md">
+                        <a
+                            href="#"
+                            className="bg-primary p-3 hover:bg-black rounded-md"
+                        >
                             <img
                                 src={FeedIcon.src}
                                 alt="contact"
                                 className="w-5 h-4"
                             />
-                        </button>
-                        <button className="bg-primary p-3 hover:bg-black rounded-md">
+                        </a>
+                        <a
+                            href="#"
+                            className="bg-primary p-3 hover:bg-black rounded-md"
+                        >
                             <img
                                 src={TwitterIcon.src}
                                 alt="contact"
                                 className="w-5"
                             />
-                        </button>
-                        <button className="bg-primary p-3 hover:bg-black rounded-md">
+                        </a>
+                        <a
+                            href="#"
+                            className="bg-primary p-3 hover:bg-black rounded-md"
+                        >
                             <img
                                 src={FacebookIcon.src}
                                 alt="contact"
                                 className="w-5"
                             />
-                        </button>
-                        <button className="bg-primary p-3 hover:bg-black rounded-md">
+                        </a>
+                        <a
+                            href="#"
+                            className="bg-primary p-3 hover:bg-black rounded-md"
+                        >
                             <img
                                 src={YoutubeIcon.src}
                                 alt="contact"
                                 className="h-4"
                             />
-                        </button>
+                        </a>
                     </div>
                 </div>
             </header>

@@ -106,7 +106,7 @@ const Sidebar = ({ sideBarData }) => {
                     Archives
                 </h2>
                 <ul className="archiveData text-lg">
-                    {sideBarData.dates.map((item, index) => {
+                    {sideBarData.dates.slice(0, 4).map((item, index) => {
                         return (
                             <li key={index}>
                                 ○&nbsp;&nbsp;&nbsp;
@@ -131,7 +131,7 @@ const Sidebar = ({ sideBarData }) => {
                     Categories
                 </h2>
                 <ul className="archiveData text-lg">
-                    {sideBarData.tags.map((tag, index) => {
+                    {sideBarData.tags.slice(0, 5).map((tag, index) => {
                         return (
                             <li key={index}>
                                 ○&nbsp;&nbsp;&nbsp;
@@ -154,34 +154,46 @@ const Sidebar = ({ sideBarData }) => {
                     Stay in Touch
                 </h2>
                 <div className="flex gap-1">
-                    <button className="bg-primary p-3 hover:bg-black rounded-md">
+                    <a
+                        href="#"
+                        className="bg-primary p-3 hover:bg-black rounded-md"
+                    >
                         <img
                             src={FeedIcon.src}
                             alt="contact"
                             className="w-5 h-4"
                         />
-                    </button>
-                    <button className="bg-primary p-3 hover:bg-black rounded-md">
+                    </a>
+                    <a
+                        href="#"
+                        className="bg-primary p-3 hover:bg-black rounded-md"
+                    >
                         <img
                             src={TwitterIcon.src}
                             alt="contact"
                             className="w-5"
                         />
-                    </button>
-                    <button className="bg-primary p-3 hover:bg-black rounded-md">
+                    </a>
+                    <a
+                        href="#"
+                        className="bg-primary p-3 hover:bg-black rounded-md"
+                    >
                         <img
                             src={FacebookIcon.src}
                             alt="contact"
                             className="w-5"
                         />
-                    </button>
-                    <button className="bg-primary p-3 hover:bg-black rounded-md">
+                    </a>
+                    <a
+                        href="#"
+                        className="bg-primary p-3 hover:bg-black rounded-md"
+                    >
                         <img
                             src={YoutubeIcon.src}
                             alt="contact"
                             className="h-4"
                         />
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

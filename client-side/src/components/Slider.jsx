@@ -58,10 +58,13 @@ const Slider = ({ sliderPosts }) => {
                         })}`;
                         return (
                             <div
-                                className="flex flex-col lg:flex-row-reverse w-[100%]"
+                                className="flex flex-col items-center lg:flex-row-reverse w-[100%]"
                                 key={index}
                             >
-                                <Link href={postUrl} className="">
+                                <Link
+                                    href={postUrl}
+                                    className="flex-grow lg:w-[50%]"
+                                >
                                     <img
                                         src={item.imageUrl}
                                         alt={item.title}
@@ -102,7 +105,7 @@ const Slider = ({ sliderPosts }) => {
                                     </p>
 
                                     <Link href={postUrl}>
-                                        <h2 className="text-3xl font-bold font-['Ubuntu',sans-serif] hover:underline underline-offset-4 pb-3">
+                                        <h2 className="text-2xl font-bold font-['Ubuntu',sans-serif] hover:underline underline-offset-4 pb-3">
                                             {item.title}
                                         </h2>
                                     </Link>
